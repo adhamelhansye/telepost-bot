@@ -7,7 +7,6 @@ log = logging.getLogger(__name__)
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
 CHANNEL_NAME = os.environ.get("CHANNEL_NAME", "Web3Sec & CyberNews")
-LANGUAGE = os.environ.get("POST_LANGUAGE", "English")
 CUSTOM_INSTRUCTION = os.environ.get("CUSTOM_INSTRUCTION", "")
 
 CATEGORY_PROMPTS = {
@@ -25,21 +24,28 @@ def rewrite_post(post: dict) -> str:
 
     prompt = f"""You write posts for a Telegram channel called "{CHANNEL_NAME}" focused on Web3 security, cybersecurity bugs, exploits, CVEs, and writeups.
 
-Your job: rewrite the source content as an engaging, human-written Telegram post.
+Your job: rewrite the source content as ONE bilingual Telegram post — English first, then Arabic (Egyptian dialect).
 
-Rules:
-- Language: {LANGUAGE}
-- Sound like a knowledgeable security researcher, not a bot or news aggregator
-- Use plain text only — no markdown bold/italic
-- Keep it under 900 characters so it fits cleanly in Telegram
-- Add 3–5 relevant hashtags at the end (e.g. #web3security #exploit #CVE #bugbounty)
-- If there's a source URL in the content, include it at the end as "Source: <url>"
+Structure the post exactly like this:
+[English version of the post]
+
+———
+
+[نفس البوست بالعربي المصري العامية — مش فصحى]
+
+Rules for BOTH versions:
+- Sound like a knowledgeable security researcher, not a bot
+- Plain text only — no markdown
+- English part: max 450 characters
+- Arabic part: max 450 characters (Egyptian colloquial — e.g. "اتهكر", "ثغرة", "خد بالك", "يعني إيه", "مش هينفع")
+- Add 3–5 hashtags at the very end (mix English + Arabic, e.g. #web3security #ثغرات #CVE)
+- If there's a source URL, add it once at the end as "Source: <url>"
 - Category hint: {category_hint}
 {f"Extra instruction: {CUSTOM_INSTRUCTION}" if CUSTOM_INSTRUCTION else ""}
 
-Output ONLY the final post text. No preamble, no explanation.
+Output ONLY the final post. No preamble, no labels, no explanation.
 
-Rewrite this for my Telegram channel:
+Rewrite this:
 
 {post['content']}"""
 
@@ -51,8 +57,8 @@ Rewrite this for my Telegram channel:
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "maxOutputTokens": 600,
-            "temperature": 0.7,
+            "maxOutputTokens": 800,
+            "temperature": 0.75,
         },
     }
 
